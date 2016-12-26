@@ -2,53 +2,70 @@
   'use strict';
 
   angular.module('ShoppingListCheckOff', [])
+  .controller('ToBuyController', ToBuyController)
+  .controller('AlreadyBoughtController', AlreadyBoughtController)
+  .service('ShoppingListCheckOffService', ShoppingListCheckOffService)
+  ;
 
-  .controller('LunchCheckerController', LunchCheckerController);
+  ToBuyController.$inject = ['ShoppingListCheckOffService'];
+  function ToBuyController (ShoppingListCheckOffService) {
+    var controller = this;
+    controller.items = ShoppingListCheckOffService.getShoppingItems();
 
-  LunchCheckerController.$inject = ['$scope'];
+    controller.bought = function (index)  {
+      ShoppingListCheckOffService.moveItemToBought(index);
+    }
+  }
 
-  function LunchCheckerController ($scope) {
-    $scope.message = "";
-    $scope.dishList = "";
-    $scope.textStyle={};
-    $scope.msgStyle={};
+  AlreadyBoughtController.$inject = ['ShoppingListCheckOffService'];
+  function AlreadyBoughtController (ShoppingListCheckOffService) {
+    var controller = this;
 
-    $scope.updateMessage = function () {
-
-      var itemCount = calcCount($scope.dishList);
-
-      if(itemCount == 0)  {
-          $scope.textStyle.style = {"border":"2px solid red"};
-          $scope.msgStyle.style = {"color":"red"};
-          $scope.message = "Please enter data first"
-      }
-      else
-      {
-        $scope.textStyle.style = {"border":"2px solid green"};
-        $scope.msgStyle.style = {"color":"green"};
-
-        if(itemCount > 3)
-        {
-          $scope.message = "Too much!"
-        } else {
-          $scope.message = "Enjoy!"
-        }
-      }
+    controller.items = ShoppingListCheckOffService.getBoughtItems();
   };
 
-  function calcCount(itemsStr)
-  {
-    var splitArray = itemsStr.split(",");
-    var filteredSplitArray = splitArray.filter(
-      function(n){
-        return n.trim() != ""
-      }
-    );
 
-    return filteredSplitArray.length;
+  var initialShoppingList = [
+    {
+      name: "pretzels", quantity: "12"
+    },
+    {
+      name: "Milk",  quantity: "2"
+    },
+    {
+      name: "Donuts",  quantity: "200"
+    },
+    {
+      name: "Cookies", quantity: "300"
+    },
+    {
+      name: "Chocolate", quantity: "5"
+    }
+  ];
+
+  function ShoppingListCheckOffService() {
+    var service = this;
+
+    service.toBuyList = initialShoppingList;
+    service.boughtList = [];
+
+    service.moveItemToBought = function(index)  {
+      var item = service.toBuyList[index];
+      service.toBuyList.splice(index, 1);
+      service.boughtList.push(item);
+    }
+
+    service.getShoppingItems = function () {
+      return service.toBuyList;
+    };
+
+    service.getBoughtItems = function () {
+      return service.boughtList;
+    };
+
   }
+
 
 }
 
-
-})();
+)();
